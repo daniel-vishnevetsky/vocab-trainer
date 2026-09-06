@@ -207,10 +207,11 @@
         }
 
         .quiz-question {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             margin-bottom: 20px;
             text-align: left;
             direction: ltr;
+            line-height: 1.5;
         }
 
         .quiz-options {
@@ -263,7 +264,7 @@
             <h1>Academic Vocab Trainer</h1>
             <div class="mode-selector">
                 <button class="mode-btn active" id="mode-study-btn" onclick="switchMode('study')">מצב לימוד</button>
-                <button class="mode-btn" id="mode-quiz-btn" onclick="switchMode('quiz')">בוחן אקטיבי</button>
+                <button class="mode-btn" id="mode-quiz-btn" onclick="switchMode('quiz')">בוחן מיקס</button>
             </div>
         </header>
 
@@ -303,7 +304,6 @@
     </div>
 
     <script>
-        // בנק המילים שלך (אפשר להוסיף כאן עוד מילים מהרשימות)
         const currentVocabulary = [
             {
                 word: "Scrutinized",
@@ -341,6 +341,7 @@
         let isHebrewVisible = false;
         let quizCurrentIndex = 0;
         let quizScore = 0;
+        let shuffledQuizItems = [];
 
         // --- STUDY MODE LOGIC ---
         function updateStudyCard() {
@@ -411,43 +412,71 @@
         function startQuiz() {
             quizCurrentIndex = 0;
             quizScore = 0;
+            // ערבוב המילים לבוחן
+            shuffledQuizItems = [...currentVocabulary].sort(() => Math.random() - 0.5);
             loadQuizQuestion();
         }
 
         function loadQuizQuestion() {
-            if (quizCurrentIndex >= currentVocabulary.length) {
+            if (quizCurrentIndex >= shuffledQuizItems.length) {
                 document.getElementById('quiz-content').innerHTML = `
                     <div class="score-board">
                         <h2>כל הכבוד! סיימת את הבוחן 🎉</h2>
-                        <p>הצלחת ב-${quizScore} מתוך ${currentVocabulary.length} שאלות.</p>
+                        <p>הצלחת ב-${quizScore} מתוך ${shuffledQuizItems.length} שאלות.</p>
                         <button class="nav-btn primary" onclick="startQuiz()" style="margin-top: 15px;">נסה שוב</button>
                     </div>
                 `;
                 return;
             }
 
-            const currentWordObj = currentVocabulary[quizCurrentIndex];
+            const currentWordObj = shuffledQuizItems[quizCurrentIndex];
             
-            // לייצר 3 תשובות שגויות רנדומליות
-            let options = [currentWordObj.definition];
-            while (options.length < 4 && options.length < currentVocabulary.length) {
-                let randomWord = currentVocabulary[Math.floor(Math.random() * currentVocabulary.length)];
-                if (!options.includes(randomWord.definition)) {
-                    options.push(randomWord.definition);
+            // הגרלה אקראית האם סוג השאלה יהיה "השלמת משפט" (0) או "משמעות/הגדרה" (1)
+            const questionType = Math.random() < 0.5 ? 'fill_blank' : 'definition';
+
+            let html = `<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">שאלה ${quizCurrentIndex + 1} מתוך ${shuffledQuizItems.length}</div>`;
+
+            if (questionType === 'definition') {
+                // סוג 1: זיהוי משמעות לפי מילה
+                let options = [currentWordObj.definition];
+                while (options.length < 4 && options.length < currentVocabulary.length) {
+                    let randomWord = currentVocabulary[Math.floor(Math.random() * currentVocabulary.length)];
+                    if (!options.includes(randomWord.definition)) {
+                        options.push(randomWord.definition);
+                    }
                 }
+                options.sort(() => Math.random() - 0.5);
+
+                html += `
+                    <div class="quiz-question">What is the meaning of: <strong style="color: var(--accent);">${currentWordObj.word}</strong>?</div>
+                    <div class="quiz-options">
+                `;
+                options.forEach(opt => {
+                    html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(currentWordObj.definition)}')">${opt}</button>`;
+                });
+
+            } else {
+                // סוג 2: השלמת משפט (Fill in the blank)
+                // מחליף את המילה במשפט בקו תחתון
+                let maskedContext = currentWordObj.context.replace(new RegExp(currentWordObj.word, 'gi'), '_____');
+                
+                let options = [currentWordObj.word];
+                while (options.length < 4 && options.length < currentVocabulary.length) {
+                    let randomWord = currentVocabulary[Math.floor(Math.random() * currentVocabulary.length)].word;
+                    if (!options.includes(randomWord)) {
+                        options.push(randomWord);
+                    }
+                }
+                options.sort(() => Math.random() - 0.5);
+
+                html += `
+                    <div class="quiz-question">Choose the correct word for the context:<br><br><em>"${maskedContext}"</em></div>
+                    <div class="quiz-options">
+                `;
+                options.forEach(opt => {
+                    html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(currentWordObj.word)}')">${opt}</button>`;
+                });
             }
-            // ערבוב האפשרויות
-            options.sort(() => Math.random() - 0.5);
-
-            let html = `
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">שאלה ${quizCurrentIndex + 1} מתוך ${currentVocabulary.length}</div>
-                <div class="quiz-question">What is the meaning of: <strong style="color: var(--accent);">${currentWordObj.word}</strong>?</div>
-                <div class="quiz-options">
-            `;
-
-            options.forEach(opt => {
-                html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(currentWordObj.definition)}')">${opt}</button>`;
-            });
 
             html += `</div>`;
             document.getElementById('quiz-content').innerHTML = html;
@@ -459,14 +488,13 @@
 
         function checkAnswer(buttonElement, selected, correct) {
             const options = document.querySelectorAll('.quiz-option');
-            options.forEach(btn => btn.disabled = true); // השבתת לחיצות נוספות
+            options.forEach(btn => btn.disabled = true);
 
             if (selected === correct) {
                 buttonElement.classList.add('correct');
                 quizScore++;
             } else {
                 buttonElement.classList.add('incorrect');
-                // לסמן את התשובה הנכונה כדי לעזור ללמוד
                 options.forEach(btn => {
                     if (btn.innerText === correct) {
                         btn.classList.add('correct');
@@ -480,7 +508,6 @@
             }, 1500);
         }
 
-        // טעינה ראשונית
         updateStudyCard();
     </script>
 </body>
