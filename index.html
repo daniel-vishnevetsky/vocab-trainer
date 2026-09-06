@@ -275,6 +275,15 @@
             studyIndex = 0;
             updateStatusBadge();
             updateStudyCard();
+
+            // רענון אוטומטי של הבוחן אם אנחנו כרגע במסך הבוחן ושינינו סט מהתפריט
+            if (document.getElementById('view-quiz').style.display === 'block') {
+                if (document.getElementById('btn-quiz').classList.contains('active')) {
+                    switchViewQuiz(false);
+                } else if (document.getElementById('btn-weak').classList.contains('active')) {
+                    switchViewQuiz(true);
+                }
+            }
         }
 
         function markSectionFinished() {
@@ -327,7 +336,6 @@
             u.lang = 'en-US'; window.speechSynthesis.speak(u);
         }
 
-        // ערוך מחדש: הבוחן הרגיל מתמקד אך ורק בסט הנוכחי. בוחן חלשים מביא מילים חלשות מכל הסטים.
         function switchViewQuiz(isWeakOnly) {
             document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
@@ -366,9 +374,13 @@
             if (viewName === 'table') renderTable();
         }
 
+        // שינוי: מייצר רק שאלה אחת לכל מילה (בוחר אקראית בין שאלת משמעות לשאלת הקשר)
         function generateQuizQuestions(wordObj, queue) {
-            queue.push({ type: 'definition', target: wordObj });
-            queue.push({ type: 'fill_blank', target: wordObj });
+            if (Math.random() > 0.5) {
+                queue.push({ type: 'definition', target: wordObj });
+            } else {
+                queue.push({ type: 'fill_blank', target: wordObj });
+            }
         }
 
         function loadQuizQuestion() {
