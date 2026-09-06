@@ -164,7 +164,6 @@
     </div>
 
     <script>
-        // המפתחות החדשים לזיכרון - מבטיח טעינה חלקה ונפרדת מגרסאות ישנות
         const DB_DATA = 'vm_data_v2';
         const DB_STATUS = 'vm_status_v2';
         const DB_META = 'vm_meta_v2';
@@ -186,7 +185,6 @@
             }
         };
 
-        // טעינה בטוחה של הנתונים החדשים
         let sectionsData;
         try {
             sectionsData = JSON.parse(localStorage.getItem(DB_DATA));
@@ -201,7 +199,7 @@
 
         let wordStatuses = JSON.parse(localStorage.getItem(DB_STATUS)) || {};
         let completedSections = JSON.parse(localStorage.getItem(DB_META)) || {};
-        completedSections[Object.keys(sectionsData)[0]] = true; // פתיחה אוטומטית של פרק 1
+        completedSections[Object.keys(sectionsData)[0]] = true; 
 
         const NOW = Date.now();
         const DECAY_TIME = 14 * 24 * 60 * 60 * 1000; 
@@ -212,7 +210,7 @@
                     wordStatuses[item.id] = { status: 'red', lastTested: NOW };
                 } else if (wordStatuses[item.id].status === 'green') {
                     if (NOW - wordStatuses[item.id].lastTested > DECAY_TIME) {
-                        wordStatuses[item.id].status = 'yellow'; // מוריד צבע לירוק אחרי שבועיים
+                        wordStatuses[item.id].status = 'yellow'; 
                     }
                 }
             });
@@ -329,6 +327,7 @@
             u.lang = 'en-US'; window.speechSynthesis.speak(u);
         }
 
+        // ערוך מחדש: הבוחן הרגיל מתמקד אך ורק בסט הנוכחי. בוחן חלשים מביא מילים חלשות מכל הסטים.
         function switchViewQuiz(isWeakOnly) {
             document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
@@ -339,25 +338,16 @@
             quizScore = 0;
             quizQueue = [];
 
-            let allUnlockedWords = [];
-            sectionKeys.forEach(k => { if (isSectionUnlocked(k)) allUnlockedWords.push(...sectionsData[k].words); });
-
             if (isWeakOnly) {
                 document.getElementById('btn-weak').classList.add('active');
+                let allUnlockedWords = [];
+                sectionKeys.forEach(k => { if (isSectionUnlocked(k)) allUnlockedWords.push(...sectionsData[k].words); });
                 const weakWords = allUnlockedWords.filter(w => wordStatuses[w.id].status !== 'green');
                 weakWords.forEach(w => generateQuizQuestions(w, quizQueue));
             } else {
                 document.getElementById('btn-quiz').classList.add('active');
                 const activeWords = sectionsData[currentSectionKey].words;
                 activeWords.forEach(w => generateQuizQuestions(w, quizQueue));
-
-                let pastWords = allUnlockedWords.filter(w => !activeWords.some(aw => aw.id === w.id));
-                pastWords.sort(() => Math.random() - 0.5);
-                let numToInject = Math.floor(quizQueue.length * 0.25);
-                
-                for(let i=0; i<numToInject && i<pastWords.length; i++){
-                    generateQuizQuestions(pastWords[i], quizQueue);
-                }
             }
 
             quizQueue.sort(() => Math.random() - 0.5);
@@ -365,8 +355,8 @@
         }
 
         function startWeakQuiz() { switchViewQuiz(true); }
-        function switchView(viewName) { if(viewName === 'quiz') switchViewQuiz(false); else switchViewBase(viewName); }
         function switchViewBase(viewName) {
+            if (viewName === 'quiz') { switchViewQuiz(false); return; }
             document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`view-${viewName}`).style.display = 'block';
@@ -451,7 +441,6 @@
             setTimeout(() => { quizCurrentIndex++; loadQuizQuestion(); }, 1500);
         }
 
-        // --- BULK IMPORT ---
         function processBulkImport() {
             const raw = document.getElementById('bulk-input').value.trim();
             let setName = document.getElementById('import-set-name').value.trim();
@@ -526,6 +515,12 @@
                 });
             }
         }
+
+        // Initialize view properly
+        document.getElementById('btn-study').onclick = () => switchViewBase('study');
+        document.getElementById('btn-table').onclick = () => switchViewBase('table');
+        document.getElementById('btn-manage').onclick = () => switchViewBase('manage');
+        document.getElementById('btn-quiz').onclick = () => switchViewBase('quiz');
 
         initData();
     </script>
