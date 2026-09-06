@@ -53,13 +53,13 @@
 
         .controls-bar {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             margin-bottom: 15px;
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
             background: rgba(255, 255, 255, 0.02);
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px;
             border: 1px solid var(--border);
         }
@@ -228,9 +228,23 @@
             background-color: var(--accent-hover);
         }
 
-        .view-section {
-            display: none;
+        .finish-section-btn {
+            background-color: rgba(34, 197, 94, 0.15);
+            border: 1px solid var(--success);
+            color: #4ade80;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 15px;
+            transition: background 0.2s;
         }
+        .finish-section-btn:hover {
+            background-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .view-section { display: none; }
 
         .quiz-question {
             font-size: 1.15rem;
@@ -282,11 +296,7 @@
             padding: 20px;
         }
 
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
+        .table-responsive { width: 100%; overflow-x: auto; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -296,30 +306,14 @@
             overflow: hidden;
             border: 1px solid var(--border);
         }
-
         th, td {
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid var(--border);
             font-size: 0.95rem;
         }
-
-        th {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            display: inline-block;
-            text-align: center;
-        }
-
+        th { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: inline-block; text-align: center; }
         .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid var(--error); }
         .badge-yellow { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid var(--warning); }
         .badge-green { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid var(--success); }
@@ -337,12 +331,15 @@
             </div>
         </header>
 
-        <!-- SECTION SELECTOR BAR -->
+        <!-- CONTROLS & SECTION SELECTOR -->
         <div class="controls-bar">
-            <span style="font-size: 0.9rem; color: var(--text-muted); direction: rtl;">בחר פרק / סקשן:</span>
-            <select id="section-select" onchange="changeSection()">
-                <!-- Injected by JS -->
-            </select>
+            <div>
+                <span style="font-size: 0.9rem; color: var(--text-muted); direction: rtl; margin-left: 8px;">פרק פעיל:</span>
+                <select id="section-select" onchange="changeSection()">
+                    <!-- Injected by JS -->
+                </select>
+            </div>
+            <div id="section-status-badge" style="font-size: 0.85rem;"></div>
         </div>
 
         <!-- STUDY MODE -->
@@ -368,14 +365,14 @@
                 <button class="nav-btn" onclick="prevStudyWord()">הקודם</button>
                 <button class="nav-btn primary" onclick="nextStudyWord()">הבא ➔</button>
             </div>
+
+            <button class="finish-section-btn" id="finish-btn" onclick="markSectionFinished()">✔️ סיימתי את הפרק הזה ועברתי עליו (פתח את הפרק הבא)</button>
         </div>
 
         <!-- QUIZ MODE -->
         <div id="view-quiz" class="view-section">
             <div class="card">
-                <div id="quiz-content">
-                    <!-- Quiz injected by JS -->
-                </div>
+                <div id="quiz-content"></div>
             </div>
         </div>
 
@@ -393,9 +390,7 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody id="table-body">
-                            <!-- Injected by JS -->
-                        </tbody>
+                        <tbody id="table-body"></tbody>
                     </table>
                 </div>
             </div>
@@ -403,97 +398,123 @@
     </div>
 
     <script>
+        // מבנה הפרקים המלא (כאן תוכל להוסיף בהמשך את מאות המילים שלך מסודרות לפי סקשנים)
         const sectionsData = {
-            "skunk_works_1": {
+            "section_1": {
                 name: "Skunk Works - Set 1",
                 words: [
-                    {
-                        id: "scrutinized",
-                        word: "Scrutinized",
-                        definition: "Examined or inspected closely and thoroughly.",
-                        context: "The research committee scrutinized the methodology section of the dissertation before approving the final defense.",
-                        hebrew: "נבחן בדקדקנות / נסרק ביסודיות"
-                    },
-                    {
-                        id: "mitigate",
-                        word: "Mitigate",
-                        definition: "To make less severe, serious, or painful.",
-                        context: "Advanced thermal insulation materials are implemented to mitigate extreme temperature loads during atmospheric re-entry.",
-                        hebrew: "למתן / להפחית חומרה"
-                    }
+                    { id: "scrutinized", word: "Scrutinized", definition: "Examined or inspected closely and thoroughly.", context: "The research committee scrutinized the methodology section of the dissertation before approving the final defense.", hebrew: "נבחן בדקדקנות / נסרק ביסודיות" },
+                    { id: "mitigate", word: "Mitigate", definition: "To make less severe, serious, or painful.", context: "Advanced thermal insulation materials are implemented to mitigate extreme temperature loads during atmospheric re-entry.", hebrew: "למתן / להפחית חומרה" }
                 ]
             },
-            "skunk_works_2": {
+            "section_2": {
                 name: "Skunk Works - Set 2",
                 words: [
-                    {
-                        id: "disembed",
-                        word: "Disembed",
-                        definition: "To free or extract something from a surrounding context or matrix.",
-                        context: "In composite material analysis, engineers must disembed individual stress components from complex tensor matrices.",
-                        hebrew: "לחלץ / להוציא מהקשר או ממטריצה מקיפה"
-                    },
-                    {
-                        id: "exasperating",
-                        word: "Exasperating",
-                        definition: "Intensely irritating; frustrating.",
-                        context: "Debugging non-converging finite element models can be an exasperating experience for structural engineers.",
-                        hebrew: "מתסכל / מעצבן ביותר"
-                    },
-                    {
-                        id: "counterintuitive",
-                        word: "Counterintuitive",
-                        definition: "Contrary to intuition or common-sense expectation.",
-                        context: "The aerodynamic behavior at supersonic speeds often presents counterintuitive pressure distributions.",
-                        hebrew: "מנוגד לאינטואיציה"
-                    }
+                    { id: "disembed", word: "Disembed", definition: "To free or extract something from a surrounding context or matrix.", context: "In composite material analysis, engineers must disembed individual stress components from complex tensor matrices.", hebrew: "לחלץ / להוציא מהקשר או ממטריצה מקיפה" },
+                    { id: "exasperating", word: "Exasperating", definition: "Intensely irritating; frustrating.", context: "Debugging non-converging finite element models can be an exasperating experience for structural engineers.", hebrew: "מתסכל / מעצבן ביותר" }
+                ]
+            },
+            "section_3": {
+                name: "Skunk Works - Set 3",
+                words: [
+                    { id: "counterintuitive", word: "Counterintuitive", definition: "Contrary to intuition or common-sense expectation.", context: "The aerodynamic behavior at supersonic speeds often presents counterintuitive pressure distributions.", hebrew: "מנוגד לאינטואיציה" }
                 ]
             }
         };
 
-        let currentSectionKey = Object.keys(sectionsData)[0];
+        const sectionKeys = Object.keys(sectionsData);
+        let currentSectionKey = sectionKeys[0];
         let studyIndex = 0;
         let isHebrewVisible = false;
         let quizQueue = [];
         let quizCurrentIndex = 0;
         let quizScore = 0;
 
+        // טעינת נתונים מהדפדפן
         let wordStatuses = JSON.parse(localStorage.getItem('vocab_statuses')) || {};
-        
+        let completedSections = JSON.parse(localStorage.getItem('completed_sections')) || {};
+
+        // אתחול ברירת מחדל לסקשן ראשון כפתוח תמיד
+        completedSections['section_1'] = true; 
+
         Object.values(sectionsData).forEach(sec => {
             sec.words.forEach(item => {
                 if (!wordStatuses[item.id]) wordStatuses[item.id] = 'red';
             });
         });
 
-        function saveStatuses() {
+        function saveData() {
             localStorage.setItem('vocab_statuses', JSON.stringify(wordStatuses));
+            localStorage.setItem('completed_sections', JSON.stringify(completedSections));
+        }
+
+        // בדיקה האם סקשן נעול (האם הסקשן שלפניו הושלם)
+        function isSectionUnlocked(secKey) {
+            const index = sectionKeys.indexOf(secKey);
+            if (index === 0) return true; // הראשון תמיד פתוח
+            const prevKey = sectionKeys[index - 1];
+            return !!completedSections[prevKey];
         }
 
         function initSectionSelect() {
             const selectEl = document.getElementById('section-select');
-            selectEl.innerHTML = '<option value="ALL">🌟 כל הפרקים יחד (מבחן כולל / רטרוספקטיבי)</option>';
+            selectEl.innerHTML = '';
             
-            for (const [key, sec] of Object.entries(sectionsData)) {
+            sectionKeys.forEach((key, index) => {
+                const sec = sectionsData[key];
+                const unlocked = isSectionUnlocked(key);
                 const opt = document.createElement('option');
                 opt.value = key;
-                opt.innerText = sec.name;
+                
+                if (unlocked) {
+                    opt.innerText = `${sec.name} ${completedSections[key] ? '✅ (הושלם)' : ''}`;
+                } else {
+                    opt.innerText = `🔒 ${sec.name} (נעול - סיים את הקודם)`;
+                    opt.disabled = true;
+                }
                 selectEl.appendChild(opt);
+            });
+            selectEl.value = currentSectionKey;
+            updateStatusBadge();
+        }
+
+        function updateStatusBadge() {
+            const badge = document.getElementById('section-status-badge');
+            const finishBtn = document.getElementById('finish-btn');
+            if (completedSections[currentSectionKey]) {
+                badge.innerHTML = '<span style="color: var(--success); font-weight: bold;">סטטוס: הושלם ✅</span>';
+                finishBtn.innerText = '✔️ הפרק הושלם (המשך לתרגל חופשי)';
+            } else {
+                badge.innerHTML = '<span style="color: var(--warning); font-weight: bold;">סטטוס: בתהליך למידה ⏳</span>';
+                finishBtn.innerText = '✔️ סיימתי את הפרק הזה (פתח את הפרק הבא)';
             }
         }
 
         function changeSection() {
-            currentSectionKey = document.getElementById('section-select').value;
+            const selectEl = document.getElementById('section-select');
+            const selectedKey = selectEl.value;
+
+            if (!isSectionUnlocked(selectedKey)) {
+                alert("הפרק הזה עדיין נעול! עליך לסיים את הפרקים הקודמים לפני שתפתח אותו.");
+                selectEl.value = currentSectionKey;
+                return;
+            }
+
+            currentSectionKey = selectedKey;
             studyIndex = 0;
             updateStudyCard();
+            updateStatusBadge();
+        }
+
+        function markSectionFinished() {
+            completedSections[currentSectionKey] = true;
+            saveData();
+            initSectionSelect();
+            updateStatusBadge();
+            alert("כל הכבוד! הפרק סומן כהושלם והפרק הבא נפתח (אם קיים).");
         }
 
         function getCurrentSectionWords() {
-            if (currentSectionKey === 'ALL') {
-                let all = [];
-                Object.values(sectionsData).forEach(sec => all.push(...sec.words));
-                return all;
-            }
             return sectionsData[currentSectionKey].words;
         }
 
@@ -656,7 +677,7 @@
                     if (btn.innerText === correct) btn.classList.add('correct');
                 });
             }
-            saveStatuses();
+            saveData();
 
             setTimeout(() => {
                 quizCurrentIndex++;
@@ -694,7 +715,7 @@
             }
         }
 
-        // טעינה ראשונית – קריאה חובה לאכלוס הסקשנים!
+        // טעינה ראשונית
         initSectionSelect();
         updateStudyCard();
     </script>
