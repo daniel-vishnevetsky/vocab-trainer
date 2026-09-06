@@ -14,6 +14,7 @@
             --accent-hover: #0ea5e9;
             --border: #334155;
             --success: #22c55e;
+            --warning: #eab308;
             --error: #ef4444;
         }
 
@@ -31,7 +32,7 @@
 
         .container {
             width: 100%;
-            max-width: 650px;
+            max-width: 750px;
         }
 
         header {
@@ -41,16 +42,19 @@
             margin-bottom: 20px;
             border-bottom: 1px solid var(--border);
             padding-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         h1 {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             margin: 0;
         }
 
         .mode-selector {
             display: flex;
-            gap: 8px;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
         .mode-btn {
@@ -201,8 +205,8 @@
             background-color: var(--accent-hover);
         }
 
-        /* Quiz Mode Styles */
-        .quiz-container {
+        /* Quiz & Table Views */
+        .view-section {
             display: none;
         }
 
@@ -255,6 +259,53 @@
             font-size: 1.3rem;
             padding: 20px;
         }
+
+        /* Table View */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        data-table {
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            direction: ltr;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid var(--error); }
+        .badge-yellow { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid var(--warning); }
+        .badge-green { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid var(--success); }
     </style>
 </head>
 <body>
@@ -263,18 +314,19 @@
         <header>
             <h1>Academic Vocab Trainer</h1>
             <div class="mode-selector">
-                <button class="mode-btn active" id="mode-study-btn" onclick="switchMode('study')">מצב לימוד</button>
-                <button class="mode-btn" id="mode-quiz-btn" onclick="switchMode('quiz')">בוחן מיקס</button>
+                <button class="mode-btn active" id="btn-study" onclick="switchView('study')">מצב לימוד</button>
+                <button class="mode-btn" id="btn-quiz" onclick="switchView('quiz')">בוחן מלא (2 סוגים)</button>
+                <button class="mode-btn" id="btn-table" onclick="switchView('table')">טבלת מעקב</button>
             </div>
         </header>
 
-        <!-- STUDY MODE CONTAINER -->
-        <div id="study-container">
+        <!-- STUDY MODE -->
+        <div id="view-study" class="view-section" style="display: block;">
             <div style="text-align: right; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;" id="study-counter">מילה 1 מתוך הסט</div>
             <div class="card">
                 <div class="word-header">
                     <h2 class="word" id="word-el">Scrutinized</h2>
-                    <button class="audio-btn" onclick="speakWord(currentVocabulary[studyIndex].word)" title="שמע מילה">🔊</button>
+                    <button class="audio-btn" onclick="speakWord(vocabulary[studyIndex].word)" title="שמע מילה">🔊</button>
                 </div>
 
                 <div class="section-title">Definition</div>
@@ -293,43 +345,70 @@
             </div>
         </div>
 
-        <!-- QUIZ MODE CONTAINER -->
-        <div id="quiz-container" class="quiz-container">
+        <!-- QUIZ MODE -->
+        <div id="view-quiz" class="view-section">
             <div class="card">
                 <div id="quiz-content">
                     <!-- Quiz injected by JS -->
                 </div>
             </div>
         </div>
+
+        <!-- TABLE VIEW -->
+        <div id="view-table" class="view-section">
+            <div class="card" style="padding: 15px;">
+                <h2 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; direction: rtl;">מעקב מצב מילים</h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Word</th>
+                                <th>Hebrew</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const currentVocabulary = [
+        // בנק המילים (ניתן להוסיף אליו כמה שתרצה)
+        const vocabulary = [
             {
+                id: "scrutinized",
                 word: "Scrutinized",
                 definition: "Examined or inspected closely and thoroughly.",
                 context: "The research committee scrutinized the methodology section of the dissertation before approving the final defense.",
                 hebrew: "נבחן בדקדקנות / נסרק ביסודיות"
             },
             {
+                id: "mitigate",
                 word: "Mitigate",
                 definition: "To make less severe, serious, or painful.",
                 context: "Advanced thermal insulation materials are implemented to mitigate extreme temperature loads during atmospheric re-entry.",
                 hebrew: "למתן / להפחית חומרה"
             },
             {
+                id: "disembed",
                 word: "Disembed",
                 definition: "To free or extract something from a surrounding context or matrix.",
                 context: "In composite material analysis, engineers must disembed individual stress components from complex tensor matrices.",
                 hebrew: "לחלץ / להוציא מהקשר או ממטריצה מקיפה"
             },
             {
+                id: "exasperating",
                 word: "Exasperating",
                 definition: "Intensely irritating; frustrating.",
                 context: "Debugging non-converging finite element models can be an exasperating experience for structural engineers.",
                 hebrew: "מתסכל / מעצבן ביותר"
             },
             {
+                id: "counterintuitive",
                 word: "Counterintuitive",
                 definition: "Contrary to intuition or common-sense expectation.",
                 context: "The aerodynamic behavior at supersonic speeds often presents counterintuitive pressure distributions.",
@@ -337,20 +416,45 @@
             }
         ];
 
+        // ניהול סטטוסים בזיכרון הדפדפן (אדום = new, צהוב = learning, ירוק = mastered)
+        let wordStatuses = JSON.parse(localStorage.getItem('vocab_statuses')) || {};
+        vocabulary.forEach(item => {
+            if (!wordStatuses[item.id]) wordStatuses[item.id] = 'red'; // ברירת מחדל אדום
+        });
+
+        function saveStatuses() {
+            localStorage.setItem('vocab_statuses', JSON.stringify(wordStatuses));
+        }
+
         let studyIndex = 0;
         let isHebrewVisible = false;
+        let quizQueue = [];
         let quizCurrentIndex = 0;
         let quizScore = 0;
-        let shuffledQuizItems = [];
 
-        // --- STUDY MODE LOGIC ---
+        // --- NAVIGATION BETWEEN VIEWS ---
+        function switchView(viewName) {
+            ['study', 'quiz', 'table'].forEach(v => {
+                document.getElementById(`view-${v}`).style.display = 'none';
+                document.getElementById(`btn-${v}`).classList.remove('active');
+            });
+
+            document.getElementById(`view-${viewName}`).style.display = 'block';
+            document.getElementById(`btn-${viewName}`).classList.add('active');
+
+            if (viewName === 'study') updateStudyCard();
+            if (viewName === 'quiz') startComprehensiveQuiz();
+            if (viewName === 'table') renderTable();
+        }
+
+        // --- STUDY MODE ---
         function updateStudyCard() {
-            const item = currentVocabulary[studyIndex];
+            const item = vocabulary[studyIndex];
             document.getElementById('word-el').innerText = item.word;
             document.getElementById('definition-el').innerText = item.definition;
             document.getElementById('context-el').innerText = `"${item.context}"`;
             document.getElementById('hebrew-el').innerText = item.hebrew;
-            document.getElementById('study-counter').innerText = `מילה ${studyIndex + 1} מתוך ${currentVocabulary.length}`;
+            document.getElementById('study-counter').innerText = `מילה ${studyIndex + 1} מתוך ${vocabulary.length}`;
             
             isHebrewVisible = false;
             document.getElementById('hebrew-el').style.display = 'none';
@@ -378,94 +482,70 @@
         }
 
         function nextStudyWord() {
-            studyIndex = (studyIndex + 1) % currentVocabulary.length;
+            studyIndex = (studyIndex + 1) % vocabulary.length;
             updateStudyCard();
         }
 
         function prevStudyWord() {
-            studyIndex = (studyIndex - 1 + currentVocabulary.length) % currentVocabulary.length;
+            studyIndex = (studyIndex - 1 + vocabulary.length) % vocabulary.length;
             updateStudyCard();
         }
 
-        // --- QUIZ MODE LOGIC ---
-        function switchMode(mode) {
-            const studyContainer = document.getElementById('study-container');
-            const quizContainer = document.getElementById('quiz-container');
-            const studyBtn = document.getElementById('mode-study-btn');
-            const quizBtn = document.getElementById('mode-quiz-btn');
-
-            if (mode === 'study') {
-                studyContainer.style.display = 'block';
-                quizContainer.style.display = 'none';
-                studyBtn.classList.add('active');
-                quizBtn.classList.remove('active');
-                updateStudyCard();
-            } else {
-                studyContainer.style.display = 'none';
-                quizContainer.style.display = 'block';
-                quizBtn.classList.add('active');
-                studyBtn.classList.remove('active');
-                startQuiz();
-            }
-        }
-
-        function startQuiz() {
+        // --- COMPREHENSIVE QUIZ (2 questions per word) ---
+        function startComprehensiveQuiz() {
             quizCurrentIndex = 0;
             quizScore = 0;
-            // ערבוב המילים לבוחן
-            shuffledQuizItems = [...currentVocabulary].sort(() => Math.random() - 0.5);
+            quizQueue = [];
+
+            // לכל מילה בודדת ניצור גם שאלת הגדרה וגם שאלת השלמת משפט
+            vocabulary.forEach(wordObj => {
+                quizQueue.push({ type: 'definition', target: wordObj });
+                quizQueue.push({ type: 'fill_blank', target: wordObj });
+            });
+
+            // ערבוב כל השאלות יחד
+            quizQueue.sort(() => Math.random() - 0.5);
             loadQuizQuestion();
         }
 
         function loadQuizQuestion() {
-            if (quizCurrentIndex >= shuffledQuizItems.length) {
+            if (quizCurrentIndex >= quizQueue.length) {
                 document.getElementById('quiz-content').innerHTML = `
                     <div class="score-board">
-                        <h2>כל הכבוד! סיימת את הבוחן 🎉</h2>
-                        <p>הצלחת ב-${quizScore} מתוך ${shuffledQuizItems.length} שאלות.</p>
-                        <button class="nav-btn primary" onclick="startQuiz()" style="margin-top: 15px;">נסה שוב</button>
+                        <h2>כל הכבוד! סיימת את הבוחן המלא 🎉</h2>
+                        <p>הצלחת ב-${quizScore} מתוך ${quizQueue.length} שאלות.</p>
+                        <button class="nav-btn primary" onclick="startComprehensiveQuiz()" style="margin-top: 15px;">נסה שוב</button>
                     </div>
                 `;
                 return;
             }
 
-            const currentWordObj = shuffledQuizItems[quizCurrentIndex];
-            
-            // הגרלה אקראית האם סוג השאלה יהיה "השלמת משפט" (0) או "משמעות/הגדרה" (1)
-            const questionType = Math.random() < 0.5 ? 'fill_blank' : 'definition';
+            const currentTask = quizQueue[quizCurrentIndex];
+            const wordObj = currentTask.target;
+            let html = `<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">שאלה ${quizCurrentIndex + 1} מתוך ${quizQueue.length}</div>`;
 
-            let html = `<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">שאלה ${quizCurrentIndex + 1} מתוך ${shuffledQuizItems.length}</div>`;
-
-            if (questionType === 'definition') {
-                // סוג 1: זיהוי משמעות לפי מילה
-                let options = [currentWordObj.definition];
-                while (options.length < 4 && options.length < currentVocabulary.length) {
-                    let randomWord = currentVocabulary[Math.floor(Math.random() * currentVocabulary.length)];
-                    if (!options.includes(randomWord.definition)) {
-                        options.push(randomWord.definition);
-                    }
+            if (currentTask.type === 'definition') {
+                let options = [wordObj.definition];
+                while (options.length < 4 && options.length < vocabulary.length) {
+                    let randomItem = vocabulary[Math.floor(Math.random() * vocabulary.length)];
+                    if (!options.includes(randomItem.definition)) options.push(randomItem.definition);
                 }
                 options.sort(() => Math.random() - 0.5);
 
                 html += `
-                    <div class="quiz-question">What is the meaning of: <strong style="color: var(--accent);">${currentWordObj.word}</strong>?</div>
+                    <div class="quiz-question">What is the meaning of: <strong style="color: var(--accent);">${wordObj.word}</strong>?</div>
                     <div class="quiz-options">
                 `;
                 options.forEach(opt => {
-                    html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(currentWordObj.definition)}')">${opt}</button>`;
+                    html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(wordObj.definition)}', '${wordObj.id}')">${opt}</button>`;
                 });
 
             } else {
-                // סוג 2: השלמת משפט (Fill in the blank)
-                // מחליף את המילה במשפט בקו תחתון
-                let maskedContext = currentWordObj.context.replace(new RegExp(currentWordObj.word, 'gi'), '_____');
-                
-                let options = [currentWordObj.word];
-                while (options.length < 4 && options.length < currentVocabulary.length) {
-                    let randomWord = currentVocabulary[Math.floor(Math.random() * currentVocabulary.length)].word;
-                    if (!options.includes(randomWord)) {
-                        options.push(randomWord);
-                    }
+                let maskedContext = wordObj.context.replace(new RegExp(wordObj.word, 'gi'), '_____');
+                let options = [wordObj.word];
+                while (options.length < 4 && options.length < vocabulary.length) {
+                    let randomItem = vocabulary[Math.floor(Math.random() * vocabulary.length)].word;
+                    if (!options.includes(randomItem)) options.push(randomItem);
                 }
                 options.sort(() => Math.random() - 0.5);
 
@@ -474,7 +554,7 @@
                     <div class="quiz-options">
                 `;
                 options.forEach(opt => {
-                    html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(currentWordObj.word)}')">${opt}</button>`;
+                    html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(wordObj.word)}', '${wordObj.id}')">${opt}</button>`;
                 });
             }
 
@@ -486,21 +566,25 @@
             return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
-        function checkAnswer(buttonElement, selected, correct) {
+        function checkAnswer(buttonElement, selected, correct, wordId) {
             const options = document.querySelectorAll('.quiz-option');
             options.forEach(btn => btn.disabled = true);
 
             if (selected === correct) {
                 buttonElement.classList.add('correct');
                 quizScore++;
+                // אם ענה נכון, מקדם את הצבע (אדום -> צהוב -> ירוק)
+                if (wordStatuses[wordId] === 'red') wordStatuses[wordId] = 'yellow';
+                else if (wordStatuses[wordId] === 'yellow') wordStatuses[wordId] = 'green';
             } else {
                 buttonElement.classList.add('incorrect');
+                // אם טעה, חוזר לאדום או נשאר באדום
+                wordStatuses[wordId] = 'red';
                 options.forEach(btn => {
-                    if (btn.innerText === correct) {
-                        btn.classList.add('correct');
-                    }
+                    if (btn.innerText === correct) btn.classList.add('correct');
                 });
             }
+            saveStatuses();
 
             setTimeout(() => {
                 quizCurrentIndex++;
@@ -508,6 +592,35 @@
             }, 1500);
         }
 
+        // --- TABLE VIEW (DASHBOARD) ---
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            vocabulary.forEach(item => {
+                const status = wordStatuses[item.id] || 'red';
+                let badgeClass = 'badge-red';
+                let badgeText = 'לתרגול (חדש)';
+
+                if (status === 'yellow') {
+                    badgeClass = 'badge-yellow';
+                    badgeText = 'במתקדמים';
+                } else if (status === 'green') {
+                    badgeClass = 'badge-green';
+                    badgeText = 'שלוט היטב';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: bold; color: var(--accent);">${item.word}</td>
+                    <td>${item.hebrew}</td>
+                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // טעינה ראשונית
         updateStudyCard();
     </script>
 </body>
