@@ -337,7 +337,7 @@
             </div>
         </header>
 
-        <!-- SDC/SECTION SELECTOR BAR -->
+        <!-- SECTION SELECTOR BAR -->
         <div class="controls-bar">
             <span style="font-size: 0.9rem; color: var(--text-muted); direction: rtl;">בחר פרק / סקשן:</span>
             <select id="section-select" onchange="changeSection()">
@@ -403,7 +403,6 @@
     </div>
 
     <script>
-        // מאגר המילים המחולק לסקשנים / פרקים
         const sectionsData = {
             "skunk_works_1": {
                 name: "Skunk Works - Set 1",
@@ -461,7 +460,6 @@
 
         let wordStatuses = JSON.parse(localStorage.getItem('vocab_statuses')) || {};
         
-        // אתחול סטטוסים למילים חדשות
         Object.values(sectionsData).forEach(sec => {
             sec.words.forEach(item => {
                 if (!wordStatuses[item.id]) wordStatuses[item.id] = 'red';
@@ -472,7 +470,6 @@
             localStorage.setItem('vocab_statuses', JSON.stringify(wordStatuses));
         }
 
-        // אכלוס סלקטור הפרקים
         function initSectionSelect() {
             const selectEl = document.getElementById('section-select');
             selectEl.innerHTML = '<option value="ALL">🌟 כל הפרקים יחד (מבחן כולל / רטרוספקטיבי)</option>';
@@ -500,7 +497,6 @@
             return sectionsData[currentSectionKey].words;
         }
 
-        // --- NAVIGATION ---
         function switchView(viewName) {
             ['study', 'quiz', 'table'].forEach(v => {
                 document.getElementById(`view-${v}`).style.display = 'none';
@@ -515,7 +511,6 @@
             if (viewName === 'table') renderTable();
         }
 
-        // --- STUDY MODE ---
         function updateStudyCard() {
             const words = getCurrentSectionWords();
             if (words.length === 0) return;
@@ -565,14 +560,12 @@
             updateStudyCard();
         }
 
-        // --- QUIZ MODE ---
         function startComprehensiveQuiz() {
             quizCurrentIndex = 0;
             quizScore = 0;
             quizQueue = [];
 
             const words = getCurrentSectionWords();
-            // מבחן מלא על המילים בסקשן הנבחר (או על הכל אם נבחר ALL)
             words.forEach(wordObj => {
                 quizQueue.push({ type: 'definition', target: wordObj });
                 quizQueue.push({ type: 'fill_blank', target: wordObj });
@@ -601,7 +594,7 @@
 
             const currentTask = quizQueue[quizCurrentIndex];
             const wordObj = currentTask.target;
-            const allWordsPool = getCurrentSectionWords(); // לצורך אפשרויות שגויות מתוך המאגר הרלוונטי
+            const allWordsPool = getCurrentSectionWords();
 
             let html = `<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">שאלה ${quizCurrentIndex + 1} מתוך ${quizQueue.length}</div>`;
 
@@ -660,7 +653,7 @@
                 buttonElement.classList.add('incorrect');
                 wordStatuses[wordId] = 'red';
                 options.forEach(btn => {
-                    if (btn.innerText === correct) btn.classList.0 = btn.classList.add('correct');
+                    if (btn.innerText === correct) btn.classList.add('correct');
                 });
             }
             saveStatuses();
@@ -671,7 +664,6 @@
             }, 1500);
         }
 
-        // --- TABLE VIEW ---
         function renderTable() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
@@ -702,7 +694,7 @@
             }
         }
 
-        // טעינה ראשונית
+        // טעינה ראשונית – קריאה חובה לאכלוס הסקשנים!
         initSectionSelect();
         updateStudyCard();
     </script>
