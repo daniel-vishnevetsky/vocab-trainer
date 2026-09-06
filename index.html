@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Vocabulary Trainer</title>
+    <title>Advanced Vocab Trainer</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -18,411 +18,203 @@
             --error: #ef4444;
         }
 
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
+        body { font-family: system-ui, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 800px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        h1 { font-size: 1.4rem; margin: 0; color: var(--accent); }
+        
+        .mode-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+        .mode-btn { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+        .mode-btn.active { background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: bold; }
+        .mode-btn.danger { border-color: var(--error); color: var(--error); }
+        .mode-btn.danger:hover { background: rgba(239, 68, 68, 0.1); }
 
-        .container {
-            width: 100%;
-            max-width: 750px;
-        }
+        .controls-bar { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
+        select, input, textarea { background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; font-family: inherit; }
+        textarea { width: 100%; height: 150px; direction: ltr; margin-top: 10px; resize: vertical; }
+        
+        .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: left; direction: ltr; margin-bottom: 20px; }
+        .word-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .word { font-size: 2rem; font-weight: bold; color: var(--accent); margin: 0; }
+        
+        .audio-btn { background: var(--accent); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: transform 0.1s; }
+        .audio-btn:hover { transform: scale(1.05); }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-top: 15px; margin-bottom: 5px; }
+        .definition { font-size: 1.1rem; margin-bottom: 15px; }
+        .context-sentence { font-style: italic; background: rgba(255,255,255,0.03); padding: 12px; border-left: 3px solid var(--accent); border-radius: 4px; margin-bottom: 20px; }
+        .hebrew-translation { direction: rtl; background: rgba(56, 189, 248, 0.1); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 1.05rem; display: none; border: 1px dashed var(--accent); }
 
-        h1 {
-            font-size: 1.3rem;
-            margin: 0;
-        }
+        .btn { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-color); padding: 10px 16px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .btn:hover { background-color: var(--border); }
+        .btn-primary { background: var(--accent); color: #0f172a; border: none; font-weight: bold; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-block { width: 100%; margin-top: 10px; }
 
-        .controls-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255, 255, 255, 0.02);
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-
-        select {
-            background: var(--card-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        .mode-selector {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .mode-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-
-        .mode-btn.active {
-            background: var(--accent);
-            color: #0f172a;
-            border-color: var(--accent);
-            font-weight: bold;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            text-align: left;
-            direction: ltr;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .word-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .word {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent);
-            margin: 0;
-        }
-
-        .audio-btn {
-            background: var(--accent);
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: background 0.2s, transform 0.1s;
-        }
-
-        .audio-btn:hover {
-            background: var(--accent-hover);
-            transform: scale(1.05);
-        }
-
-        .section-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-            margin-top: 15px;
-            margin-bottom: 5px;
-        }
-
-        .definition {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-        }
-
-        .context-sentence {
-            font-style: italic;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 12px;
-            border-left: 3px solid var(--accent);
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
-        .hebrew-translation {
-            direction: rtl;
-            background: rgba(56, 189, 248, 0.1);
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 1.05rem;
-            display: none;
-            border: 1px dashed var(--accent);
-        }
-
-        .reveal-btn {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            width: 100%;
-            transition: all 0.2s;
-        }
-
-        .reveal-btn:hover {
-            border-color: var(--accent);
-            color: var(--text-color);
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .nav-btn {
-            flex: 1;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            color: var(--text-color);
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background 0.2s;
-        }
-
-        .nav-btn:hover {
-            background-color: var(--border);
-        }
-
-        .nav-btn.primary {
-            background-color: var(--accent);
-            color: #0f172a;
-            border: none;
-            font-weight: bold;
-        }
-
-        .nav-btn.primary:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .finish-section-btn {
-            background-color: rgba(34, 197, 94, 0.15);
-            border: 1px solid var(--success);
-            color: #4ade80;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 15px;
-            transition: background 0.2s;
-        }
-        .finish-section-btn:hover {
-            background-color: rgba(34, 197, 94, 0.3);
-        }
+        .nav-buttons { display: flex; gap: 10px; }
+        .nav-buttons .btn { flex: 1; }
 
         .view-section { display: none; }
+        
+        /* Quiz */
+        .quiz-question { font-size: 1.15rem; margin-bottom: 20px; text-align: left; direction: ltr; line-height: 1.5; }
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; direction: ltr; }
+        .quiz-option { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-color); padding: 12px; border-radius: 8px; cursor: pointer; text-align: left; transition: 0.2s; }
+        .quiz-option:hover { border-color: var(--accent); }
+        .quiz-option.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--success); color: #4ade80; }
+        .quiz-option.incorrect { background: rgba(239, 68, 68, 0.2); border-color: var(--error); color: #f87171; }
+        .score-board { text-align: center; font-size: 1.2rem; padding: 20px; direction: rtl; }
 
-        .quiz-question {
-            font-size: 1.15rem;
-            margin-bottom: 20px;
-            text-align: left;
-            direction: ltr;
-            line-height: 1.5;
-        }
-
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            direction: ltr;
-        }
-
-        .quiz-option {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            color: var(--text-color);
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: left;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        .quiz-option:hover {
-            border-color: var(--accent);
-            background: rgba(56, 189, 248, 0.05);
-        }
-
-        .quiz-option.correct {
-            background: rgba(34, 197, 94, 0.2);
-            border-color: var(--success);
-            color: #4ade80;
-        }
-
-        .quiz-option.incorrect {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: var(--error);
-            color: #f87171;
-        }
-
-        .score-board {
-            text-align: center;
-            font-size: 1.3rem;
-            padding: 20px;
-        }
-
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            direction: ltr;
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.95rem;
-        }
-        th { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: inline-block; text-align: center; }
-        .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid var(--error); }
-        .badge-yellow { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid var(--warning); }
-        .badge-green { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid var(--success); }
+        /* Table */
+        table { width: 100%; border-collapse: collapse; direction: ltr; background: var(--card-bg); border-radius: 8px; overflow: hidden; font-size: 0.9rem; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: rgba(255,255,255,0.05); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .badge-yellow { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+        .badge-green { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        
+        .helper-text { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; direction: rtl; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header>
-            <h1>Academic Vocab Trainer</h1>
+            <h1>VocabMaster</h1>
             <div class="mode-selector">
-                <button class="mode-btn active" id="btn-study" onclick="switchView('study')">מצב לימוד</button>
-                <button class="mode-btn" id="btn-quiz" onclick="switchView('quiz')">בוחן מלא</button>
-                <button class="mode-btn" id="btn-table" onclick="switchView('table')">טבלת מעקב</button>
+                <button class="mode-btn active" id="btn-study" onclick="switchView('study')">📖 לימוד</button>
+                <button class="mode-btn" id="btn-quiz" onclick="switchView('quiz')">🎯 בוחן משולב</button>
+                <button class="mode-btn danger" id="btn-weak" onclick="startWeakQuiz()">🔥 מילים חלשות</button>
+                <button class="mode-btn" id="btn-table" onclick="switchView('table')">📊 מעקב</button>
+                <button class="mode-btn" id="btn-manage" onclick="switchView('manage')">⚙️ הוספת מילים</button>
             </div>
         </header>
 
-        <!-- CONTROLS & SECTION SELECTOR -->
-        <div class="controls-bar">
+        <!-- CONTROLS -->
+        <div class="controls-bar" id="main-controls">
             <div>
-                <span style="font-size: 0.9rem; color: var(--text-muted); direction: rtl; margin-left: 8px;">פרק פעיל:</span>
-                <select id="section-select" onchange="changeSection()">
-                    <!-- Injected by JS -->
-                </select>
+                <span style="font-size: 0.9rem; color: var(--text-muted); direction: rtl; margin-left: 8px;">סט פעיל:</span>
+                <select id="section-select" onchange="changeSection()"></select>
             </div>
             <div id="section-status-badge" style="font-size: 0.85rem;"></div>
         </div>
 
         <!-- STUDY MODE -->
         <div id="view-study" class="view-section" style="display: block;">
-            <div style="text-align: right; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;" id="study-counter">מילה 1 מתוך הסט</div>
+            <div style="text-align: right; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;" id="study-counter"></div>
             <div class="card">
                 <div class="word-header">
                     <h2 class="word" id="word-el"></h2>
-                    <button class="audio-btn" onclick="speakWord(getCurrentSectionWords()[studyIndex].word)" title="שמע מילה">🔊</button>
+                    <button class="audio-btn" onclick="speakCurrentWord()">🔊</button>
                 </div>
-
                 <div class="section-title">Definition</div>
                 <div class="definition" id="definition-el"></div>
-
-                <div class="section-title">Academic Context</div>
+                <div class="section-title">Context</div>
                 <div class="context-sentence" id="context-el"></div>
-
-                <button class="reveal-btn" id="reveal-btn" onclick="toggleHebrew()">הצג תרגום לעברית</button>
+                <button class="btn btn-block" id="reveal-btn" onclick="toggleHebrew()">הצג תרגום</button>
                 <div class="hebrew-translation" id="hebrew-el"></div>
             </div>
-
             <div class="nav-buttons">
-                <button class="nav-btn" onclick="prevStudyWord()">הקודם</button>
-                <button class="nav-btn primary" onclick="nextStudyWord()">הבא ➔</button>
+                <button class="btn" onclick="prevStudyWord()">הקודם</button>
+                <button class="btn btn-primary" onclick="nextStudyWord()">הבא ➔</button>
             </div>
-
-            <button class="finish-section-btn" id="finish-btn" onclick="markSectionFinished()">✔️ סיימתי את הפרק הזה ועברתי עליו (פתח את הפרק הבא)</button>
+            <button class="btn btn-block" style="border-color: var(--success); color: var(--success); margin-top: 15px;" id="finish-btn" onclick="markSectionFinished()">✔️ סיימתי את הסט הזה (פתח הבא)</button>
         </div>
 
         <!-- QUIZ MODE -->
         <div id="view-quiz" class="view-section">
-            <div class="card">
-                <div id="quiz-content"></div>
-            </div>
+            <div class="card" id="quiz-content"></div>
         </div>
 
         <!-- TABLE VIEW -->
         <div id="view-table" class="view-section">
-            <div class="card" style="padding: 15px;">
-                <h2 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 15px; direction: rtl;">מעקב מצב מילים כללי</h2>
-                <div class="table-responsive">
+            <div class="card" style="padding: 15px; direction: rtl;">
+                <h2>טבלת שליטה</h2>
+                <div style="overflow-x: auto;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Word</th>
-                                <th>Section</th>
-                                <th>Hebrew</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Word</th><th>Set</th><th>Hebrew</th><th>Status</th></tr></thead>
                         <tbody id="table-body"></tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <!-- MANAGE & BULK ADD -->
+        <div id="view-manage" class="view-section">
+            <div class="card" style="direction: rtl;">
+                <h2>הוספת מילים מהירה (Bulk Import)</h2>
+                <p class="helper-text">הדבק רשימת מילים בפורמט הבא (מופרד בקו אנכי |):<br>
+                <code style="direction: ltr; display: block; margin: 10px 0; color: var(--accent);">Word | Definition | Context | Hebrew</code></p>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom: 5px;">בחר סט קיים או הקלד שם לסט חדש:</label>
+                    <input type="text" id="import-set-name" placeholder="למשל: Set 3" style="width: 100%; box-sizing: border-box;">
+                </div>
+
+                <textarea id="bulk-input" placeholder="Scrutinized | Examined closely | The committee scrutinized the plan | נבחן בדקדקנות"></textarea>
+                <button class="btn btn-primary btn-block" onclick="processBulkImport()">➕ הוסף מילים למאגר</button>
+            </div>
+            
+            <div class="card" style="direction: rtl; border-color: var(--error);">
+                <h3 style="color: var(--error); margin-top: 0;">ניהול נתונים</h3>
+                <button class="btn" style="color: var(--error); border-color: var(--error);" onclick="factoryReset()">⚠️ איפוס כל המידע (מחיקת התקדמות וסטים)</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // מבנה הפרקים המלא (כאן תוכל להוסיף בהמשך את מאות המילים שלך מסודרות לפי סקשנים)
-        const sectionsData = {
-            "section_1": {
-                name: "Skunk Works - Set 1",
+        const DEFAULT_DATA = {
+            "set_1": {
+                name: "Set 1",
                 words: [
-                    { id: "scrutinized", word: "Scrutinized", definition: "Examined or inspected closely and thoroughly.", context: "The research committee scrutinized the methodology section of the dissertation before approving the final defense.", hebrew: "נבחן בדקדקנות / נסרק ביסודיות" },
-                    { id: "mitigate", word: "Mitigate", definition: "To make less severe, serious, or painful.", context: "Advanced thermal insulation materials are implemented to mitigate extreme temperature loads during atmospheric re-entry.", hebrew: "למתן / להפחית חומרה" }
+                    { id: "afterburner", word: "Afterburner", definition: "An auxiliary burner fitted to the exhaust system of a jet engine to increase thrust.", context: "The SR-71 ignited its afterburner to achieve supersonic speeds.", hebrew: "מבער אחורי" },
+                    { id: "avionics", word: "Avionics", definition: "Electronic equipment fitted in an aircraft.", context: "The upgraded reconnaissance plane featured state-of-the-art avionics.", hebrew: "אוויוניקה" },
+                    { id: "fuselage", word: "Fuselage", definition: "The main body of an aircraft.", context: "Due to thermal expansion, the titanium fuselage leaked fuel on the runway.", hebrew: "גוף המטוס" },
+                    { id: "radomes", word: "Radomes", definition: "A structural, weatherproof enclosure that protects a radar antenna.", context: "The jet's nose cone radomes were crafted from composite materials.", hebrew: "ראדומים (כיפות מכ"ם)" },
+                    { id: "stealth", word: "Stealth technology", definition: "Tactics and technology to make vehicles less visible to radar.", context: "Skunk Works pioneered stealth technology with the F-117 Nighthawk.", hebrew: "טכנולוגיית חמקנות" }
                 ]
             },
-            "section_2": {
-                name: "Skunk Works - Set 2",
+            "set_2": {
+                name: "Set 2",
                 words: [
-                    { id: "disembed", word: "Disembed", definition: "To free or extract something from a surrounding context or matrix.", context: "In composite material analysis, engineers must disembed individual stress components from complex tensor matrices.", hebrew: "לחלץ / להוציא מהקשר או ממטריצה מקיפה" },
-                    { id: "exasperating", word: "Exasperating", definition: "Intensely irritating; frustrating.", context: "Debugging non-converging finite element models can be an exasperating experience for structural engineers.", hebrew: "מתסכל / מעצבן ביותר" }
-                ]
-            },
-            "section_3": {
-                name: "Skunk Works - Set 3",
-                words: [
-                    { id: "counterintuitive", word: "Counterintuitive", definition: "Contrary to intuition or common-sense expectation.", context: "The aerodynamic behavior at supersonic speeds often presents counterintuitive pressure distributions.", hebrew: "מנוגד לאינטואיציה" }
+                    { id: "fidgety", word: "Fidgety", definition: "Inclined to fidget; restless or uneasy.", context: "Mindfulness practices can help calm a fidgety mind before an exam.", hebrew: "חסר מנוחה / קופצני" },
+                    { id: "mindful", word: "Mindful", definition: "Conscious or aware of something.", context: "Being mindful of your breathing is the first step in the mental note technique.", hebrew: "קשוב / מודע" },
+                    { id: "rumination", word: "Rumination", definition: "A deep or considered thought about something; overthinking.", context: "He used a 4-second inhale technique to stop the endless rumination.", hebrew: "הרהור / חשיבה טורדנית" },
+                    { id: "schadenfreude", word: "Schadenfreude", definition: "Pleasure derived by someone from another person's misfortune.", context: "He felt a twinge of schadenfreude when his overbearing adversary failed the test.", hebrew: "שמחה לאיד" },
+                    { id: "contemplative", word: "Contemplative", definition: "Expressing or involving prolonged thought.", context: "The monastery provided a quiet, contemplative milieu for the students.", hebrew: "מהורהר / עיוני" }
                 ]
             }
         };
 
-        const sectionKeys = Object.keys(sectionsData);
+        let sectionsData = JSON.parse(localStorage.getItem('vocab_data'));
+        if (!sectionsData || Object.keys(sectionsData).length === 0) {
+            sectionsData = DEFAULT_DATA;
+            localStorage.setItem('vocab_data', JSON.stringify(sectionsData));
+        }
+
+        let wordStatuses = JSON.parse(localStorage.getItem('vocab_statuses')) || {};
+        let completedSections = JSON.parse(localStorage.getItem('completed_sections')) || {};
+        completedSections[Object.keys(sectionsData)[0]] = true; // Auto-unlock first set
+
+        // Initialize statuses & DECAY logic (downgrade green to yellow after 14 days)
+        const NOW = Date.now();
+        const DECAY_TIME = 14 * 24 * 60 * 60 * 1000; 
+
+        Object.values(sectionsData).forEach(sec => {
+            sec.words.forEach(item => {
+                if (!wordStatuses[item.id]) {
+                    wordStatuses[item.id] = { status: 'red', lastTested: NOW };
+                } else if (wordStatuses[item.id].status === 'green') {
+                    if (NOW - wordStatuses[item.id].lastTested > DECAY_TIME) {
+                        wordStatuses[item.id].status = 'yellow'; // Decay!
+                    }
+                }
+            });
+        });
+        saveMeta();
+
+        let sectionKeys = Object.keys(sectionsData);
         let currentSectionKey = sectionKeys[0];
         let studyIndex = 0;
         let isHebrewVisible = false;
@@ -430,110 +222,80 @@
         let quizCurrentIndex = 0;
         let quizScore = 0;
 
-        // טעינת נתונים מהדפדפן
-        let wordStatuses = JSON.parse(localStorage.getItem('vocab_statuses')) || {};
-        let completedSections = JSON.parse(localStorage.getItem('completed_sections')) || {};
-
-        // אתחול ברירת מחדל לסקשן ראשון כפתוח תמיד
-        completedSections['section_1'] = true; 
-
-        Object.values(sectionsData).forEach(sec => {
-            sec.words.forEach(item => {
-                if (!wordStatuses[item.id]) wordStatuses[item.id] = 'red';
-            });
-        });
-
-        function saveData() {
+        function saveMeta() {
             localStorage.setItem('vocab_statuses', JSON.stringify(wordStatuses));
             localStorage.setItem('completed_sections', JSON.stringify(completedSections));
         }
 
-        // בדיקה האם סקשן נעול (האם הסקשן שלפניו הושלם)
         function isSectionUnlocked(secKey) {
             const index = sectionKeys.indexOf(secKey);
-            if (index === 0) return true; // הראשון תמיד פתוח
-            const prevKey = sectionKeys[index - 1];
-            return !!completedSections[prevKey];
+            if (index === 0) return true;
+            return !!completedSections[sectionKeys[index - 1]];
         }
 
-        function initSectionSelect() {
+        function initData() {
+            sectionKeys = Object.keys(sectionsData);
             const selectEl = document.getElementById('section-select');
             selectEl.innerHTML = '';
             
-            sectionKeys.forEach((key, index) => {
+            sectionKeys.forEach((key) => {
                 const sec = sectionsData[key];
                 const unlocked = isSectionUnlocked(key);
                 const opt = document.createElement('option');
                 opt.value = key;
-                
-                if (unlocked) {
-                    opt.innerText = `${sec.name} ${completedSections[key] ? '✅ (הושלם)' : ''}`;
-                } else {
-                    opt.innerText = `🔒 ${sec.name} (נעול - סיים את הקודם)`;
-                    opt.disabled = true;
-                }
+                opt.innerText = unlocked ? `${sec.name} ${completedSections[key] ? '✅' : ''}` : `🔒 ${sec.name} (נעול)`;
+                if (!unlocked) opt.disabled = true;
                 selectEl.appendChild(opt);
             });
+            
+            if (!sectionKeys.includes(currentSectionKey)) currentSectionKey = sectionKeys[0];
             selectEl.value = currentSectionKey;
+            
             updateStatusBadge();
+            updateStudyCard();
         }
 
         function updateStatusBadge() {
             const badge = document.getElementById('section-status-badge');
             const finishBtn = document.getElementById('finish-btn');
             if (completedSections[currentSectionKey]) {
-                badge.innerHTML = '<span style="color: var(--success); font-weight: bold;">סטטוס: הושלם ✅</span>';
-                finishBtn.innerText = '✔️ הפרק הושלם (המשך לתרגל חופשי)';
+                badge.innerHTML = '<span style="color: var(--success); font-weight: bold;">הושלם ✅</span>';
+                finishBtn.innerText = '✔️ הסט הושלם';
             } else {
-                badge.innerHTML = '<span style="color: var(--warning); font-weight: bold;">סטטוס: בתהליך למידה ⏳</span>';
-                finishBtn.innerText = '✔️ סיימתי את הפרק הזה (פתח את הפרק הבא)';
+                badge.innerHTML = '<span style="color: var(--warning); font-weight: bold;">בלמידה ⏳</span>';
+                finishBtn.innerText = '✔️ סיימתי את הסט (פתח הבא)';
             }
         }
 
         function changeSection() {
-            const selectEl = document.getElementById('section-select');
-            const selectedKey = selectEl.value;
-
-            if (!isSectionUnlocked(selectedKey)) {
-                alert("הפרק הזה עדיין נעול! עליך לסיים את הפרקים הקודמים לפני שתפתח אותו.");
-                selectEl.value = currentSectionKey;
-                return;
-            }
-
-            currentSectionKey = selectedKey;
+            currentSectionKey = document.getElementById('section-select').value;
             studyIndex = 0;
-            updateStudyCard();
             updateStatusBadge();
+            updateStudyCard();
         }
 
         function markSectionFinished() {
             completedSections[currentSectionKey] = true;
-            saveData();
-            initSectionSelect();
-            updateStatusBadge();
-            alert("כל הכבוד! הפרק סומן כהושלם והפרק הבא נפתח (אם קיים).");
-        }
-
-        function getCurrentSectionWords() {
-            return sectionsData[currentSectionKey].words;
+            saveMeta();
+            initData();
         }
 
         function switchView(viewName) {
-            ['study', 'quiz', 'table'].forEach(v => {
-                document.getElementById(`view-${v}`).style.display = 'none';
-                document.getElementById(`btn-${v}`).classList.remove('active');
-            });
-
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            
             document.getElementById(`view-${viewName}`).style.display = 'block';
-            document.getElementById(`btn-${viewName}`).classList.add('active');
+            const btn = document.getElementById(`btn-${viewName}`);
+            if(btn) btn.classList.add('active');
 
             if (viewName === 'study') updateStudyCard();
-            if (viewName === 'quiz') startComprehensiveQuiz();
             if (viewName === 'table') renderTable();
+            document.getElementById('main-controls').style.display = (viewName === 'manage' || viewName === 'table') ? 'none' : 'flex';
         }
 
+        // --- STUDY MODE ---
         function updateStudyCard() {
-            const words = getCurrentSectionWords();
+            const words = sectionsData[currentSectionKey]?.words || [];
             if (words.length === 0) return;
             if (studyIndex >= words.length) studyIndex = 0;
 
@@ -546,178 +308,224 @@
             
             isHebrewVisible = false;
             document.getElementById('hebrew-el').style.display = 'none';
-            document.getElementById('reveal-btn').innerText = 'הצג תרגום לעברית';
-        }
-
-        function speakWord(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
+            document.getElementById('reveal-btn').innerText = 'הצג תרגום';
         }
 
         function toggleHebrew() {
             isHebrewVisible = !isHebrewVisible;
-            const hebrewEl = document.getElementById('hebrew-el');
-            const btnEl = document.getElementById('reveal-btn');
-            if (isHebrewVisible) {
-                hebrewEl.style.display = 'block';
-                btnEl.innerText = 'הסתר תרגום';
-            } else {
-                hebrewEl.style.display = 'none';
-                btnEl.innerText = 'הצג תרגום לעברית';
-            }
+            document.getElementById('hebrew-el').style.display = isHebrewVisible ? 'block' : 'none';
+            document.getElementById('reveal-btn').innerText = isHebrewVisible ? 'הסתר תרגום' : 'הצג תרגום';
         }
 
-        function nextStudyWord() {
-            const words = getCurrentSectionWords();
-            studyIndex = (studyIndex + 1) % words.length;
-            updateStudyCard();
+        function nextStudyWord() { studyIndex = (studyIndex + 1) % sectionsData[currentSectionKey].words.length; updateStudyCard(); }
+        function prevStudyWord() { studyIndex = (studyIndex - 1 + sectionsData[currentSectionKey].words.length) % sectionsData[currentSectionKey].words.length; updateStudyCard(); }
+        function speakCurrentWord() {
+            const txt = sectionsData[currentSectionKey].words[studyIndex].word;
+            const u = new SpeechSynthesisUtterance(txt);
+            u.lang = 'en-US'; window.speechSynthesis.speak(u);
         }
 
-        function prevStudyWord() {
-            const words = getCurrentSectionWords();
-            studyIndex = (studyIndex - 1 + words.length) % words.length;
-            updateStudyCard();
-        }
-
-        function startComprehensiveQuiz() {
+        // --- QUIZ LOGIC (80/20 Rule & Weak Words) ---
+        function switchViewQuiz(isWeakOnly) {
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('view-quiz').style.display = 'block';
+            document.getElementById('main-controls').style.display = 'flex';
+            
             quizCurrentIndex = 0;
             quizScore = 0;
             quizQueue = [];
 
-            const words = getCurrentSectionWords();
-            words.forEach(wordObj => {
-                quizQueue.push({ type: 'definition', target: wordObj });
-                quizQueue.push({ type: 'fill_blank', target: wordObj });
-            });
+            let allUnlockedWords = [];
+            sectionKeys.forEach(k => { if (isSectionUnlocked(k)) allUnlockedWords.push(...sectionsData[k].words); });
+
+            if (isWeakOnly) {
+                document.getElementById('btn-weak').classList.add('active');
+                const weakWords = allUnlockedWords.filter(w => wordStatuses[w.id].status !== 'green');
+                weakWords.forEach(w => generateQuizQuestions(w, quizQueue));
+            } else {
+                document.getElementById('btn-quiz').classList.add('active');
+                const activeWords = sectionsData[currentSectionKey].words;
+                activeWords.forEach(w => generateQuizQuestions(w, quizQueue));
+
+                // 80/20 Rule: Inject ~25% past words
+                let pastWords = allUnlockedWords.filter(w => !activeWords.some(aw => aw.id === w.id));
+                pastWords.sort(() => Math.random() - 0.5);
+                let numToInject = Math.floor(quizQueue.length * 0.25);
+                
+                for(let i=0; i<numToInject && i<pastWords.length; i++){
+                    generateQuizQuestions(pastWords[i], quizQueue);
+                }
+            }
 
             quizQueue.sort(() => Math.random() - 0.5);
             loadQuizQuestion();
         }
 
+        function startWeakQuiz() { switchViewQuiz(true); }
+        function switchView(viewName) { if(viewName === 'quiz') switchViewQuiz(false); else switchViewBase(viewName); }
+        function switchViewBase(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).style.display = 'block';
+            document.getElementById(`btn-${viewName}`).classList.add('active');
+            document.getElementById('main-controls').style.display = (viewName === 'manage' || viewName === 'table') ? 'none' : 'flex';
+            if (viewName === 'study') updateStudyCard();
+            if (viewName === 'table') renderTable();
+        }
+
+        function generateQuizQuestions(wordObj, queue) {
+            queue.push({ type: 'definition', target: wordObj });
+            queue.push({ type: 'fill_blank', target: wordObj });
+        }
+
         function loadQuizQuestion() {
             if (quizQueue.length === 0) {
-                document.getElementById('quiz-content').innerHTML = `<div class="score-board">אין מילים בסקשן הזה כרגע.</div>`;
+                document.getElementById('quiz-content').innerHTML = `<div class="score-board">אין מילים למבחן זה!</div>`;
                 return;
             }
-
             if (quizCurrentIndex >= quizQueue.length) {
                 document.getElementById('quiz-content').innerHTML = `
                     <div class="score-board">
-                        <h2>כל הכבוד! סיימת את הבוחן 🎉</h2>
-                        <p>הצלחת ב-${quizScore} מתוך ${quizQueue.length} שאלות.</p>
-                        <button class="nav-btn primary" onclick="startComprehensiveQuiz()" style="margin-top: 15px;">נסה שוב</button>
-                    </div>
-                `;
+                        <h2>סיימת את הבוחן 🎉</h2>
+                        <p>ציון: ${quizScore} / ${quizQueue.length}</p>
+                        <button class="btn btn-primary" onclick="switchViewQuiz(false)">חזור לבוחן המשולב</button>
+                    </div>`;
                 return;
             }
 
             const currentTask = quizQueue[quizCurrentIndex];
             const wordObj = currentTask.target;
-            const allWordsPool = getCurrentSectionWords();
+            
+            let allWordsPool = [];
+            sectionKeys.forEach(k => allWordsPool.push(...sectionsData[k].words));
 
             let html = `<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">שאלה ${quizCurrentIndex + 1} מתוך ${quizQueue.length}</div>`;
 
             if (currentTask.type === 'definition') {
                 let options = [wordObj.definition];
                 while (options.length < 4 && options.length < allWordsPool.length) {
-                    let randomItem = allWordsPool[Math.floor(Math.random() * allWordsPool.length)];
-                    if (!options.includes(randomItem.definition)) options.push(randomItem.definition);
+                    let r = allWordsPool[Math.floor(Math.random() * allWordsPool.length)].definition;
+                    if (!options.includes(r)) options.push(r);
                 }
                 options.sort(() => Math.random() - 0.5);
-
-                html += `
-                    <div class="quiz-question">What is the meaning of: <strong style="color: var(--accent);">${wordObj.word}</strong>?</div>
-                    <div class="quiz-options">
-                `;
-                options.forEach(opt => {
-                    html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(wordObj.definition)}', '${wordObj.id}')">${opt}</button>`;
-                });
-
+                html += `<div class="quiz-question">What is the meaning of: <strong style="color: var(--accent);">${wordObj.word}</strong>?</div><div class="quiz-options">`;
+                options.forEach(opt => html += `<button class="quiz-option" onclick="checkAns(this, '${escapeQ(opt)}', '${escapeQ(wordObj.definition)}', '${wordObj.id}')">${opt}</button>`);
             } else {
-                let maskedContext = wordObj.context.replace(new RegExp(wordObj.word, 'gi'), '_____');
+                let masked = wordObj.context.replace(new RegExp(wordObj.word, 'gi'), '_____');
                 let options = [wordObj.word];
                 while (options.length < 4 && options.length < allWordsPool.length) {
-                    let randomItem = allWordsPool[Math.floor(Math.random() * allWordsPool.length)].word;
-                    if (!options.includes(randomItem)) options.push(randomItem);
+                    let r = allWordsPool[Math.floor(Math.random() * allWordsPool.length)].word;
+                    if (!options.includes(r)) options.push(r);
                 }
                 options.sort(() => Math.random() - 0.5);
-
-                html += `
-                    <div class="quiz-question">Choose the correct word for the context:<br><br><em>"${maskedContext}"</em></div>
-                    <div class="quiz-options">
-                `;
-                options.forEach(opt => {
-                    html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(wordObj.word)}', '${wordObj.id}')">${opt}</button>`;
-                });
+                html += `<div class="quiz-question">Choose the correct word:<br><br><em>"${masked}"</em></div><div class="quiz-options">`;
+                options.forEach(opt => html += `<button class="quiz-option" onclick="checkAns(this, '${escapeQ(opt)}', '${escapeQ(wordObj.word)}', '${wordObj.id}')">${opt}</button>`);
             }
-
             html += `</div>`;
             document.getElementById('quiz-content').innerHTML = html;
         }
 
-        function escapeQuotes(str) {
-            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        }
+        function escapeQ(str) { return str.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
-        function checkAnswer(buttonElement, selected, correct, wordId) {
-            const options = document.querySelectorAll('.quiz-option');
-            options.forEach(btn => btn.disabled = true);
+        function checkAns(btn, selected, correct, wordId) {
+            document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+            let s = wordStatuses[wordId];
+            s.lastTested = Date.now();
 
             if (selected === correct) {
-                buttonElement.classList.add('correct');
+                btn.classList.add('correct');
                 quizScore++;
-                if (wordStatuses[wordId] === 'red') wordStatuses[wordId] = 'yellow';
-                else if (wordStatuses[wordId] === 'yellow') wordStatuses[wordId] = 'green';
+                if (s.status === 'red') s.status = 'yellow';
+                else if (s.status === 'yellow') s.status = 'green';
             } else {
-                buttonElement.classList.add('incorrect');
-                wordStatuses[wordId] = 'red';
-                options.forEach(btn => {
-                    if (btn.innerText === correct) btn.classList.add('correct');
+                btn.classList.add('incorrect');
+                s.status = 'red';
+                document.querySelectorAll('.quiz-option').forEach(b => {
+                    if (b.innerText === correct) b.classList.add('correct');
                 });
             }
-            saveData();
-
-            setTimeout(() => {
-                quizCurrentIndex++;
-                loadQuizQuestion();
-            }, 1500);
+            saveMeta();
+            setTimeout(() => { quizCurrentIndex++; loadQuizQuestion(); }, 1500);
         }
 
+        // --- BULK IMPORT ---
+        function processBulkImport() {
+            const raw = document.getElementById('bulk-input').value.trim();
+            let setName = document.getElementById('import-set-name').value.trim();
+            if (!raw) return alert("הדבק מילים בפורמט לפני השמירה.");
+            
+            // Find or Create Set
+            let targetKey = null;
+            for (const [k, v] of Object.entries(sectionsData)) {
+                if (v.name === setName || k === setName) { targetKey = k; break; }
+            }
+            if (!targetKey) {
+                if (!setName) setName = `Set ${Object.keys(sectionsData).length + 1}`;
+                targetKey = setName.toLowerCase().replace(/\s+/g, '_');
+                sectionsData[targetKey] = { name: setName, words: [] };
+            }
+
+            const lines = raw.split('\n');
+            let addedCount = 0;
+
+            lines.forEach(line => {
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length >= 4) {
+                    const id = parts[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+                    sectionsData[targetKey].words.push({
+                        id: id,
+                        word: parts[0],
+                        definition: parts[1],
+                        context: parts[2],
+                        hebrew: parts[3]
+                    });
+                    if (!wordStatuses[id]) wordStatuses[id] = { status: 'red', lastTested: Date.now() };
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                localStorage.setItem('vocab_data', JSON.stringify(sectionsData));
+                saveMeta();
+                initData();
+                document.getElementById('bulk-input').value = '';
+                alert(`הצלחה! נוספו ${addedCount} מילים ל-${setName}.`);
+            } else {
+                alert("לא זוהו מילים בפורמט התקין (Word | Def | Context | Heb). ודא שיש קו אנכי | בין הערכים.");
+            }
+        }
+
+        function factoryReset() {
+            if(confirm("בטוח? פעולה זו תמחק את כל הסטים וההתקדמות שלך!")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // --- TABLE ---
         function renderTable() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-
-            for (const [secKey, secObj] of Object.entries(sectionsData)) {
-                secObj.words.forEach(item => {
-                    const status = wordStatuses[item.id] || 'red';
-                    let badgeClass = 'badge-red';
-                    let badgeText = 'לתרגול (חדש)';
-
-                    if (status === 'yellow') {
-                        badgeClass = 'badge-yellow';
-                        badgeText = 'במתקדמים';
-                    } else if (status === 'green') {
-                        badgeClass = 'badge-green';
-                        badgeText = 'שלוט היטב';
-                    }
-
+            for (const [sKey, sec] of Object.entries(sectionsData)) {
+                sec.words.forEach(item => {
+                    const st = wordStatuses[item.id]?.status || 'red';
+                    let cls = 'badge-red', txt = 'לתרגול';
+                    if (st === 'yellow') { cls = 'badge-yellow'; txt = 'במתקדמים'; }
+                    if (st === 'green') { cls = 'badge-green'; txt = 'שלוט היטב'; }
+                    
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td style="font-weight: bold; color: var(--accent);">${item.word}</td>
-                        <td style="font-size: 0.85rem; color: var(--text-muted);">${secObj.name}</td>
-                        <td>${item.hebrew}</td>
-                        <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-                    `;
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">${sec.name}</td>
+                        <td style="direction: rtl;">${item.hebrew}</td>
+                        <td><span class="badge ${cls}">${txt}</span></td>`;
                     tbody.appendChild(tr);
                 });
             }
         }
 
-        // טעינה ראשונית
-        initSectionSelect();
-        updateStudyCard();
+        initData();
     </script>
 </body>
 </html>
