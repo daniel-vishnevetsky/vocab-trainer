@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Vocabulary Trainer</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --border: #334155;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            margin: 0;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mode-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: #0f172a;
+            border-color: var(--accent);
+            font-weight: bold;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            text-align: left;
+            direction: ltr;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .word-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .word {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 0;
+        }
+
+        .audio-btn {
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .audio-btn:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .definition {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .context-sentence {
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-left: 3px solid var(--accent);
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .hebrew-translation {
+            direction: rtl;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 1.05rem;
+            display: none;
+            border: 1px dashed var(--accent);
+        }
+
+        .reveal-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .reveal-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-color);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            flex: 1;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-color);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--border);
+        }
+
+        .nav-btn.primary {
+            background-color: var(--accent);
+            color: #0f172a;
+            border: none;
+            font-weight: bold;
+        }
+
+        .nav-btn.primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Quiz Mode Styles */
+        .quiz-container {
+            display: none;
+        }
+
+        .quiz-question {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            direction: ltr;
+        }
+
+        .quiz-option {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-color);
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .quiz-option.correct {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: var(--success);
+            color: #4ade80;
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--error);
+            color: #f87171;
+        }
+
+        .score-board {
+            text-align: center;
+            font-size: 1.3rem;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Academic Vocab Trainer</h1>
+            <div class="mode-selector">
+                <button class="mode-btn active" id="mode-study-btn" onclick="switchMode('study')">מצב לימוד</button>
+                <button class="mode-btn" id="mode-quiz-btn" onclick="switchMode('quiz')">בוחן אקטיבי</button>
+            </div>
+        </header>
+
+        <!-- STUDY MODE CONTAINER -->
+        <div id="study-container">
+            <div style="text-align: right; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;" id="study-counter">מילה 1 מתוך הסט</div>
+            <div class="card">
+                <div class="word-header">
+                    <h2 class="word" id="word-el">Scrutinized</h2>
+                    <button class="audio-btn" onclick="speakWord(currentVocabulary[studyIndex].word)" title="שמע מילה">🔊</button>
+                </div>
+
+                <div class="section-title">Definition</div>
+                <div class="definition" id="definition-el">Examined or inspected closely and thoroughly.</div>
+
+                <div class="section-title">Academic Context</div>
+                <div class="context-sentence" id="context-el">"The research committee scrutinized the methodology section of the dissertation before approving the final defense."</div>
+
+                <button class="reveal-btn" id="reveal-btn" onclick="toggleHebrew()">הצג תרגום לעברית</button>
+                <div class="hebrew-translation" id="hebrew-el">נבחן בדקדקנות / נסרק ביסודיות</div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="prevStudyWord()">הקודם</button>
+                <button class="nav-btn primary" onclick="nextStudyWord()">הבא ➔</button>
+            </div>
+        </div>
+
+        <!-- QUIZ MODE CONTAINER -->
+        <div id="quiz-container" class="quiz-container">
+            <div class="card">
+                <div id="quiz-content">
+                    <!-- Quiz injected by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // בנק המילים שלך (אפשר להוסיף כאן עוד מילים מהרשימות)
+        const currentVocabulary = [
+            {
+                word: "Scrutinized",
+                definition: "Examined or inspected closely and thoroughly.",
+                context: "The research committee scrutinized the methodology section of the dissertation before approving the final defense.",
+                hebrew: "נבחן בדקדקנות / נסרק ביסודיות"
+            },
+            {
+                word: "Mitigate",
+                definition: "To make less severe, serious, or painful.",
+                context: "Advanced thermal insulation materials are implemented to mitigate extreme temperature loads during atmospheric re-entry.",
+                hebrew: "למתן / להפחית חומרה"
+            },
+            {
+                word: "Disembed",
+                definition: "To free or extract something from a surrounding context or matrix.",
+                context: "In composite material analysis, engineers must disembed individual stress components from complex tensor matrices.",
+                hebrew: "לחלץ / להוציא מהקשר או ממטריצה מקיפה"
+            },
+            {
+                word: "Exasperating",
+                definition: "Intensely irritating; frustrating.",
+                context: "Debugging non-converging finite element models can be an exasperating experience for structural engineers.",
+                hebrew: "מתסכל / מעצבן ביותר"
+            },
+            {
+                word: "Counterintuitive",
+                definition: "Contrary to intuition or common-sense expectation.",
+                context: "The aerodynamic behavior at supersonic speeds often presents counterintuitive pressure distributions.",
+                hebrew: "מנוגד לאינטואיציה"
+            }
+        ];
+
+        let studyIndex = 0;
+        let isHebrewVisible = false;
+        let quizCurrentIndex = 0;
+        let quizScore = 0;
+
+        // --- STUDY MODE LOGIC ---
+        function updateStudyCard() {
+            const item = currentVocabulary[studyIndex];
+            document.getElementById('word-el').innerText = item.word;
+            document.getElementById('definition-el').innerText = item.definition;
+            document.getElementById('context-el').innerText = `"${item.context}"`;
+            document.getElementById('hebrew-el').innerText = item.hebrew;
+            document.getElementById('study-counter').innerText = `מילה ${studyIndex + 1} מתוך ${currentVocabulary.length}`;
+            
+            isHebrewVisible = false;
+            document.getElementById('hebrew-el').style.display = 'none';
+            document.getElementById('reveal-btn').innerText = 'הצג תרגום לעברית';
+        }
+
+        function speakWord(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleHebrew() {
+            isHebrewVisible = !isHebrewVisible;
+            const hebrewEl = document.getElementById('hebrew-el');
+            const btnEl = document.getElementById('reveal-btn');
+            if (isHebrewVisible) {
+                hebrewEl.style.display = 'block';
+                btnEl.innerText = 'הסתר תרגום';
+            } else {
+                hebrewEl.style.display = 'none';
+                btnEl.innerText = 'הצג תרגום לעברית';
+            }
+        }
+
+        function nextStudyWord() {
+            studyIndex = (studyIndex + 1) % currentVocabulary.length;
+            updateStudyCard();
+        }
+
+        function prevStudyWord() {
+            studyIndex = (studyIndex - 1 + currentVocabulary.length) % currentVocabulary.length;
+            updateStudyCard();
+        }
+
+        // --- QUIZ MODE LOGIC ---
+        function switchMode(mode) {
+            const studyContainer = document.getElementById('study-container');
+            const quizContainer = document.getElementById('quiz-container');
+            const studyBtn = document.getElementById('mode-study-btn');
+            const quizBtn = document.getElementById('mode-quiz-btn');
+
+            if (mode === 'study') {
+                studyContainer.style.display = 'block';
+                quizContainer.style.display = 'none';
+                studyBtn.classList.add('active');
+                quizBtn.classList.remove('active');
+                updateStudyCard();
+            } else {
+                studyContainer.style.display = 'none';
+                quizContainer.style.display = 'block';
+                quizBtn.classList.add('active');
+                studyBtn.classList.remove('active');
+                startQuiz();
+            }
+        }
+
+        function startQuiz() {
+            quizCurrentIndex = 0;
+            quizScore = 0;
+            loadQuizQuestion();
+        }
+
+        function loadQuizQuestion() {
+            if (quizCurrentIndex >= currentVocabulary.length) {
+                document.getElementById('quiz-content').innerHTML = `
+                    <div class="score-board">
+                        <h2>כל הכבוד! סיימת את הבוחן 🎉</h2>
+                        <p>הצלחת ב-${quizScore} מתוך ${currentVocabulary.length} שאלות.</p>
+                        <button class="nav-btn primary" onclick="startQuiz()" style="margin-top: 15px;">נסה שוב</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const currentWordObj = currentVocabulary[quizCurrentIndex];
+            
+            // לייצר 3 תשובות שגויות רנדומליות
+            let options = [currentWordObj.definition];
+            while (options.length < 4 && options.length < currentVocabulary.length) {
+                let randomWord = currentVocabulary[Math.floor(Math.random() * currentVocabulary.length)];
+                if (!options.includes(randomWord.definition)) {
+                    options.push(randomWord.definition);
+                }
+            }
+            // ערבוב האפשרויות
+            options.sort(() => Math.random() - 0.5);
+
+            let html = `
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">שאלה ${quizCurrentIndex + 1} מתוך ${currentVocabulary.length}</div>
+                <div class="quiz-question">What is the meaning of: <strong style="color: var(--accent);">${currentWordObj.word}</strong>?</div>
+                <div class="quiz-options">
+            `;
+
+            options.forEach(opt => {
+                html += `<button class="quiz-option" onclick="checkAnswer(this, '${escapeQuotes(opt)}', '${escapeQuotes(currentWordObj.definition)}')">${opt}</button>`;
+            });
+
+            html += `</div>`;
+            document.getElementById('quiz-content').innerHTML = html;
+        }
+
+        function escapeQuotes(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function checkAnswer(buttonElement, selected, correct) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(btn => btn.disabled = true); // השבתת לחיצות נוספות
+
+            if (selected === correct) {
+                buttonElement.classList.add('correct');
+                quizScore++;
+            } else {
+                buttonElement.classList.add('incorrect');
+                // לסמן את התשובה הנכונה כדי לעזור ללמוד
+                options.forEach(btn => {
+                    if (btn.innerText === correct) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            setTimeout(() => {
+                quizCurrentIndex++;
+                loadQuizQuestion();
+            }, 1500);
+        }
+
+        // טעינה ראשונית
+        updateStudyCard();
+    </script>
+</body>
+</html>
