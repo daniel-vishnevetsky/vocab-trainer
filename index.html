@@ -158,46 +158,51 @@
             
             <div class="card" style="direction: rtl; border-color: var(--error);">
                 <h3 style="color: var(--error); margin-top: 0;">ניהול נתונים</h3>
-                <button class="btn" style="color: var(--error); border-color: var(--error);" onclick="factoryReset()">⚠️ איפוס כל המידע (מחיקת התקדמות וסטים)</button>
+                <button class="btn" style="color: var(--error); border-color: var(--error);" onclick="factoryReset()">⚠️ איפוס האתר ומחיקת התקדמות</button>
             </div>
         </div>
     </div>
 
     <script>
+        // המפתחות החדשים לזיכרון - מבטיח טעינה חלקה ונפרדת מגרסאות ישנות
+        const DB_DATA = 'vm_data_v2';
+        const DB_STATUS = 'vm_status_v2';
+        const DB_META = 'vm_meta_v2';
+
         const DEFAULT_DATA = {
             "set_1": {
                 name: "Set 1",
                 words: [
                     { id: "afterburner", word: "Afterburner", definition: "An auxiliary burner fitted to the exhaust system of a jet engine to increase thrust.", context: "The SR-71 ignited its afterburner to achieve supersonic speeds.", hebrew: "מבער אחורי" },
-                    { id: "avionics", word: "Avionics", definition: "Electronic equipment fitted in an aircraft.", context: "The upgraded reconnaissance plane featured state-of-the-art avionics.", hebrew: "אוויוניקה" },
-                    { id: "fuselage", word: "Fuselage", definition: "The main body of an aircraft.", context: "Due to thermal expansion, the titanium fuselage leaked fuel on the runway.", hebrew: "גוף המטוס" },
-                    { id: "radomes", word: "Radomes", definition: "A structural, weatherproof enclosure that protects a radar antenna.", context: "The jet's nose cone radomes were crafted from composite materials.", hebrew: "ראדומים (כיפות מכ"ם)" },
-                    { id: "stealth", word: "Stealth technology", definition: "Tactics and technology to make vehicles less visible to radar.", context: "Skunk Works pioneered stealth technology with the F-117 Nighthawk.", hebrew: "טכנולוגיית חמקנות" }
+                    { id: "avionics", word: "Avionics", definition: "Electronic equipment fitted in an aircraft.", context: "The upgraded reconnaissance plane featured state-of-the-art avionics.", hebrew: "אוויוניקה" }
                 ]
             },
             "set_2": {
                 name: "Set 2",
                 words: [
                     { id: "fidgety", word: "Fidgety", definition: "Inclined to fidget; restless or uneasy.", context: "Mindfulness practices can help calm a fidgety mind before an exam.", hebrew: "חסר מנוחה / קופצני" },
-                    { id: "mindful", word: "Mindful", definition: "Conscious or aware of something.", context: "Being mindful of your breathing is the first step in the mental note technique.", hebrew: "קשוב / מודע" },
-                    { id: "rumination", word: "Rumination", definition: "A deep or considered thought about something; overthinking.", context: "He used a 4-second inhale technique to stop the endless rumination.", hebrew: "הרהור / חשיבה טורדנית" },
-                    { id: "schadenfreude", word: "Schadenfreude", definition: "Pleasure derived by someone from another person's misfortune.", context: "He felt a twinge of schadenfreude when his overbearing adversary failed the test.", hebrew: "שמחה לאיד" },
-                    { id: "contemplative", word: "Contemplative", definition: "Expressing or involving prolonged thought.", context: "The monastery provided a quiet, contemplative milieu for the students.", hebrew: "מהורהר / עיוני" }
+                    { id: "mindful", word: "Mindful", definition: "Conscious or aware of something.", context: "Being mindful of your breathing is the first step in the mental note technique.", hebrew: "קשוב / מודע" }
                 ]
             }
         };
 
-        let sectionsData = JSON.parse(localStorage.getItem('vocab_data'));
-        if (!sectionsData || Object.keys(sectionsData).length === 0) {
+        // טעינה בטוחה של הנתונים החדשים
+        let sectionsData;
+        try {
+            sectionsData = JSON.parse(localStorage.getItem(DB_DATA));
+            if (!sectionsData || typeof sectionsData !== 'object' || Object.keys(sectionsData).length === 0) {
+                sectionsData = DEFAULT_DATA;
+                localStorage.setItem(DB_DATA, JSON.stringify(sectionsData));
+            }
+        } catch (e) {
             sectionsData = DEFAULT_DATA;
-            localStorage.setItem('vocab_data', JSON.stringify(sectionsData));
+            localStorage.setItem(DB_DATA, JSON.stringify(sectionsData));
         }
 
-        let wordStatuses = JSON.parse(localStorage.getItem('vocab_statuses')) || {};
-        let completedSections = JSON.parse(localStorage.getItem('completed_sections')) || {};
-        completedSections[Object.keys(sectionsData)[0]] = true; // Auto-unlock first set
+        let wordStatuses = JSON.parse(localStorage.getItem(DB_STATUS)) || {};
+        let completedSections = JSON.parse(localStorage.getItem(DB_META)) || {};
+        completedSections[Object.keys(sectionsData)[0]] = true; // פתיחה אוטומטית של פרק 1
 
-        // Initialize statuses & DECAY logic (downgrade green to yellow after 14 days)
         const NOW = Date.now();
         const DECAY_TIME = 14 * 24 * 60 * 60 * 1000; 
 
@@ -207,7 +212,7 @@
                     wordStatuses[item.id] = { status: 'red', lastTested: NOW };
                 } else if (wordStatuses[item.id].status === 'green') {
                     if (NOW - wordStatuses[item.id].lastTested > DECAY_TIME) {
-                        wordStatuses[item.id].status = 'yellow'; // Decay!
+                        wordStatuses[item.id].status = 'yellow'; // מוריד צבע לירוק אחרי שבועיים
                     }
                 }
             });
@@ -223,8 +228,8 @@
         let quizScore = 0;
 
         function saveMeta() {
-            localStorage.setItem('vocab_statuses', JSON.stringify(wordStatuses));
-            localStorage.setItem('completed_sections', JSON.stringify(completedSections));
+            localStorage.setItem(DB_STATUS, JSON.stringify(wordStatuses));
+            localStorage.setItem(DB_META, JSON.stringify(completedSections));
         }
 
         function isSectionUnlocked(secKey) {
@@ -293,7 +298,6 @@
             document.getElementById('main-controls').style.display = (viewName === 'manage' || viewName === 'table') ? 'none' : 'flex';
         }
 
-        // --- STUDY MODE ---
         function updateStudyCard() {
             const words = sectionsData[currentSectionKey]?.words || [];
             if (words.length === 0) return;
@@ -325,7 +329,6 @@
             u.lang = 'en-US'; window.speechSynthesis.speak(u);
         }
 
-        // --- QUIZ LOGIC (80/20 Rule & Weak Words) ---
         function switchViewQuiz(isWeakOnly) {
             document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
@@ -348,7 +351,6 @@
                 const activeWords = sectionsData[currentSectionKey].words;
                 activeWords.forEach(w => generateQuizQuestions(w, quizQueue));
 
-                // 80/20 Rule: Inject ~25% past words
                 let pastWords = allUnlockedWords.filter(w => !activeWords.some(aw => aw.id === w.id));
                 pastWords.sort(() => Math.random() - 0.5);
                 let numToInject = Math.floor(quizQueue.length * 0.25);
@@ -455,7 +457,6 @@
             let setName = document.getElementById('import-set-name').value.trim();
             if (!raw) return alert("הדבק מילים בפורמט לפני השמירה.");
             
-            // Find or Create Set
             let targetKey = null;
             for (const [k, v] of Object.entries(sectionsData)) {
                 if (v.name === setName || k === setName) { targetKey = k; break; }
@@ -486,7 +487,7 @@
             });
 
             if (addedCount > 0) {
-                localStorage.setItem('vocab_data', JSON.stringify(sectionsData));
+                localStorage.setItem(DB_DATA, JSON.stringify(sectionsData));
                 saveMeta();
                 initData();
                 document.getElementById('bulk-input').value = '';
@@ -498,12 +499,13 @@
 
         function factoryReset() {
             if(confirm("בטוח? פעולה זו תמחק את כל הסטים וההתקדמות שלך!")) {
-                localStorage.clear();
+                localStorage.removeItem(DB_DATA);
+                localStorage.removeItem(DB_STATUS);
+                localStorage.removeItem(DB_META);
                 location.reload();
             }
         }
 
-        // --- TABLE ---
         function renderTable() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
